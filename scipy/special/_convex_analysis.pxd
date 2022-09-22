@@ -1,24 +1,27 @@
-from libc.math cimport log, fabs, expm1, log1p, isnan, NAN, INFINITY, isinf, fmax
+from libc.math cimport log, fabs, expm1, log1p, isnan, NAN, INFINITY, isinf, fmin
 
-cdef inline double entr(double x) nogil:
-    if isnan(x):
-        return x
-    elif x > 0:
-        return -x * log(x)
-    elif x == 0:
-        return 0
+cdef inline double entr(double x, double b) nogil:
+    if b > 1:
+        if isnan(x):
+            return x
+        elif x > 0:
+            return -x * log(x)/log(b)
+        elif x == 0:
+            return 0
+        else:
+            return -INFINITY
     else:
-        return -INFINITY
+        return NAN
     
-cdef inline double ren_entr(double x, double a) nogil:
+cdef inline double ren_entr(double x, double a, double b) nogil:
     if a < 0:
         return NAN
     elif a == 1:
-        return entr(x)
+        return entr(x, b)
     elif isinf(a):
-        return -log(fmax(x))
+        return fmin(self_info(x, b))
     elif a == 0:
-        return log(size(x))
+        return log(sizeof(x)/sizeof(x[0]))
     else:
         if isnan(x):
             return x
