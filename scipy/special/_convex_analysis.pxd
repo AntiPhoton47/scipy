@@ -1,4 +1,4 @@
-from libc.math cimport log, fabs, expm1, log1p, isnan, NAN, INFINITY, isinf, fmin, fmax
+from libc.math cimport log, fabs, expm1, log1p, isnan, NAN, INFINITY, isinf
 
 cdef inline double entr(double x, double b) nogil:
     if b > 1:
@@ -13,13 +13,13 @@ cdef inline double entr(double x, double b) nogil:
     else:
         return NAN
     
-cdef inline double ren_entr(double x, double a, double b) nogil:
+cdef inline double ren_entr(double[:] x, double a, double b) nogil:
     if a < 0:
         return NAN
     elif a == 1:
         return entr(x, b)
     elif isinf(a):
-        return fmin(self_info(x, b))
+        return min(self_info(x, b))
     elif a == 0:
         return log(len(x))
     else:
@@ -31,7 +31,7 @@ cdef inline double ren_entr(double x, double a, double b) nogil:
             sum = 0
             for i in range(len(x)):
                 sum = sum + pow(x[i], a)
-            return 1/(1-a) * log(sum)
+            return 1/(1-a) * log(sum(pow(x, a)))
         elif x == 0 and a < 1:
             return -INFINITY
         elif x == 0 and a > 1:
@@ -62,13 +62,13 @@ cdef inline double kl_div(double x, double y) nogil:
     else:
         return INFINITY
     
-cdef inline double ren_div(double x, double y, double a) nogil:
+cdef inline double ren_div(double[:] x, double y, double a) nogil:
     if a < 0:
         return NAN
     elif a == 1:
         return kl_div(x, y)
     elif isinf(a):
-        return log(fmax(x/y))
+        return log(max(x/y))
     else:
         if isnan(x) or isnan(y):
             return NAN
@@ -94,7 +94,7 @@ cdef inline double rel_entr(double x, double y) nogil:
     else:
         return INFINITY
     
-cdef inline double info_fluc_cmplx(double x, double b) nogil:
+cdef inline double info_fluc_cmplx(double[:] x, double b) nogil:
     cdef int i
     cdef double sum, sum_entr
     sum, sum_entr = 0
